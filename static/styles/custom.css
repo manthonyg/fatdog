@@ -1,0 +1,47 @@
+:root {
+  --purple: #620bee;
+  --darkgreen: #008265;
+  --green: #03dac6;
+  --lightgreen: #03dac622;
+}
+
+.bg-green {
+  background-color: var(--green);
+}
+
+.bg-darkgreen {
+  background-color: var(--darkgreen);
+}
+
+.bg-lightgreen {
+  background-color: var(--lightgreen);
+}
+
+.bg-purple {
+  background-color: var(--purple);
+}
+
+.alert {
+  background-color: var(--green);
+}
+.btn {
+  background-color: var(--green);
+}
+.btn .btn-purple {
+  background-color: var(--purple);
+}
+
+.btn .btn-green {
+  background-color: var(--green);
+}
+
+.btn:focus,
+.btn:hover {
+  box-shadow: none;
+  outline: 3px;
+  background: var(--green);
+}
+
+.nav {
+  background-color: var(--purple);
+}
