@@ -45,3 +45,8 @@
 .nav {
   background-color: var(--purple);
 }
+
+.popover-header {
+  background-color: var(--purple);
+  color: #fff;
+}
