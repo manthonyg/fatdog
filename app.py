@@ -2,35 +2,10 @@ from flask import Flask, session, render_template, request, redirect, url_for, f
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
-
-app = Flask(__name__)
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fatdogdb.sqlite3'
-db = SQLAlchemy(app)
-
-db.Model.metadata.reflect(db.engine)
-
-
-class Users(db.Model):
-    __tablename__ = 'users'
-    __table_args__ = {'extend_existing': True}
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(255))
-    password = db.Column(db.String(255))
-
-
-def login_required(f):
-    """
-    Decorate routes to require login.
-
-    http://flask.pocoo.org/docs/1.0/patterns/viewdecorators/
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session.get("user_id") is None:
-            return redirect("/login")
-        return f(*args, **kwargs)
-    return decorated_function
+from helpers import calculateReqCalories
+from db import db, app, Users, Dogs, Results
+import requests
+import json
 
 
 @app.after_request
@@ -41,45 +16,74 @@ def after_request(response):
     return response
 
 
-@app.route('/')
-@login_required
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    if request.method == 'POST':
+        name = request.form.get('dog-name')
+        age = request.form.get('dog-age')
+        breed = request.form.get('dog-breed')
+        shape = request.form.get('dog-shape')
+        activity = request.form.get('dog-activity')
+        weight = request.form.get('dog-weight')
+        user_id = session['id']
+        newDog = Dogs(name=name, age=age, breed=breed,
+                      shape=shape, activity=activity, weight=weight, user_id=user_id)
+        db.session.add(newDog)
+
+        KGS = int(round(int(weight) / int(2.2), 2))
+        RER = int(round(int(70) * int((KGS**0.75)), 2))
+        MER = round(int(RER) * float(activity))
+
+        dog = Dogs.query.filter_by(
+            name=name, age=age, breed=breed, activity=activity).first()
+
+        newResult = Results(suggested_calories=calculateReqCalories(weight, activity),
+                            KGS=KGS, RER=RER, MER=MER, user_id=user_id, dog_id=dog.id)
+
+        db.session.add(newResult)
+        db.session.commit()
+
+        previousResults = db.session.query(Dogs, Results).outerjoin(
+            Results, Dogs.id == Results.dog_id).filter(Results.user_id == session['id']).limit(5).all()
+
+        breedStats = requests.get(
+            f'https://api.thedogapi.com/v1/images/search?breed_ids={dog.breed}')
+
+        return render_template('results.html', suggestedCalories=calculateReqCalories(weight, activity), name=name, weight=weight, KGS=KGS, RER=RER, MER=MER, activity=activity, breedStats=json.loads(breedStats.text), username=session['username'], previousResults=previousResults)
     if 'username' in session:
-        print("Total number of users is", Users.query.count())
         return render_template('dashboard.html', username=session['username'])
     return render_template('login.html')
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@ app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Forget any user_id
+    # Forget any username
     session.clear()
 
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        passwordHash = generate_password_hash(password)
         # Ensure username was submitted
         if not username:
             return flash("must provide username")
         # Ensure password was submitted
         if not password:
             return flash("must provide password")
-        incomingUser = Users.query.filter_by(username=username)
-        incomingPassword = Users.query.filter_by(password=passwordHash)
-        print(incomingUser, incomingPassword)
 
-        if not incomingUser or not incomingPassword:
-            flash('No matching user')
-            return render_template('login.html')
+        incomingUser = Users.query.filter_by(username=username).first()
+
+        if not incomingUser.username or not check_password_hash(incomingUser.password, password):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
 
         session['username'] = request.form['username']
+        session['id'] = incomingUser.id
         return redirect(url_for('index'))
 
     return render_template('login.html')
 
 
-@app.route('/logout')
+@ app.route('/logout')
 def logout():
     # clear the current user from session
     session['username'] = ''
@@ -87,7 +91,7 @@ def logout():
     return render_template('login.html')
 
 
-@app.route('/register/', methods=['GET', 'POST'])
+@ app.route('/register/', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
 
@@ -106,6 +110,7 @@ def register():
         newUser = Users(username=username, password=passwordHash)
         db.session.add(newUser)
         db.session.commit()
+        flash('Account successfully created. Please log in.')
         return render_template('login.html')
     return render_template('register.html')
 
