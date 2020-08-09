@@ -14,12 +14,13 @@ db.Model.metadata.reflect(db.engine)
 
 class User(db.Model):
     __tablename__ = 'users'
-    __table_args__ = {'extend_existing': True}
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(255))
     password = db.Column(db.String(255))
 
-    def __init__(self, username, password):
+    def __init__(self, id, username, password):
+        self.id = id
         self.username = username
         self.password = password
 
@@ -29,8 +30,8 @@ class User(db.Model):
 
 class Dog(db.Model):
     __tablename__ = 'dogs'
-    __table_args__ = {'extend_existing': True}
-    id = db.Column(db.Integer, primary_key=True)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255))
     age = db.Column(db.String(255))
     breed = db.Column(db.String(255))
