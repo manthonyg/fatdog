@@ -93,16 +93,19 @@ def register():
 
 @ app.route('/login', methods=['GET', 'POST'])
 def login():
-
+    print('login route')
     form = LoginForm()
+    print(form.errors)
     if form.validate_on_submit():
         # Forget any username currently in session
         session.clear()
+        print('validated')
         username = request.form.get('username')
         password = request.form.get('password')
 
         incomingUser = User.query.filter_by(username=username).first()
         if not incomingUser or not check_password_hash(incomingUser.password, password):
+            print('fuck')
             flash('Invalid username or password')
             return render_template('login.html', form=form)
 
