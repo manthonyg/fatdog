@@ -20,7 +20,6 @@ class User(db.Model):
     password = db.Column(db.String(255))
 
     def __init__(self, id, username, password):
-        self.id = id
         self.username = username
         self.password = password
 
@@ -45,8 +44,6 @@ class Dog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     def __init__(self, name, age, breed, shape, activity, weight, KGS, RER, MER, breedStats, user_id):
-
-        self.id = id
         self.name = name
         self.age = age
         self.breed = breed
