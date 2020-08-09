@@ -24,24 +24,23 @@ Log In
 
             <div class="d-flex justify-content-center form_container">
 
-                <form action="/login" method="post">
+                <form method="post" action="/login">
+                    {{ form.hidden_tag() }}
                     <div class="input-group mb-3">
                         <h5>Login</h5>
                     </div>
+
                     <div class="input-group mb-3">
                         <span class="input-group-text bg-purple"><i class="fa fa-user"></i></span>
-                        <input type="text" name="username" class="form-control input_user" placeholder="username">
+                        {{ form.username(class_="form-control input_user", placeholder="username") }}
                     </div>
-                    <div class="input-group mb-2">
+                    <div class="input-group mb-3">
                         <span class="input-group-text bg-purple"><i class="fa fa-key"></i></span>
-                        <input type="password" name="password" class="form-control input_pass" placeholder="password">
+                        {{ form.password(class_="form-control input_pass", placeholder="password") }}
                     </div>
-                    <div class="form-group">
 
-                    </div>
-                    <div class="d-flex justify-content-center mt-3 login_container">
-                        <button type="submit" class="btn login_btn">Login</button>
-                    </div>
+                    {{ form.submit(class_="btn login_btn") }}
+
                 </form>
 
             </div>

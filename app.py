@@ -5,20 +5,7 @@ from functools import wraps
 from db import db, app, User, Dog
 import requests
 import json
-from forms import RegistrationForm
-import click
-from flask.cli import with_appcontext
-
-
-@click.command(name='create_tables')
-@with_appcontext
-def create_tables():
-    db.create_all()
-# Replace the values in .env.example with your values and rename this file to .env:
-
-# FLASK_APP: Entry point of your application (should be wsgi.py).
-# FLASK_ENV: The environment to run your app in (either development or production).
-# SECRET_KEY: Randomly generated string of characters used to encrypt your app's data.
+from forms import RegistrationForm, LoginForm
 
 
 @app.after_request
@@ -31,6 +18,9 @@ def after_request(response):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+
+    loginForm = LoginForm()
+
     previousResults = db.session.query(Dog).order_by(Dog.id).all()
     if request.method == 'POST':
 
@@ -56,14 +46,16 @@ def index():
     if 'username' in session:
         return render_template('dashboard.html', username=session['username'], assessment=True, previousResults=previousResults)
 
-    return render_template('login.html')
+    return render_template('login.html', form=loginForm)
 
 
 @ app.route('/register', methods=['GET', 'POST'])
 def register():
 
-    form = RegistrationForm()
-    if form.validate_on_submit():
+    registrationForm = RegistrationForm()
+    loginForm = LoginForm()
+
+    if registrationForm.validate_on_submit():
         username = request.form.get('username')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
@@ -73,39 +65,38 @@ def register():
         db.session.add(newUser)
         db.session.commit()
         flash('Account successfully created. Please log in.')
-        return render_template('login.html')
-    return render_template('register.html', form=form)
+        return render_template('login.html', form=loginForm)
+    return render_template('register.html', form=registrationForm)
 
 
 @ app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Forget any username
-    session.clear()
+    form = LoginForm()
 
-    if request.method == 'POST':
+    if form.validate_on_submit():
         username = request.form.get('username')
         password = request.form.get('password')
-        # Ensure username was submitted
 
         incomingUser = User.query.filter_by(username=username).first()
         if not incomingUser or not check_password_hash(incomingUser.password, password):
             flash('Invalid username or password')
-            return redirect(url_for('index'))
+            return render_template('login.html', form=form)
 
         session['username'] = request.form['username']
         session['id'] = incomingUser.id
 
         return redirect(url_for('index'))
 
-    return render_template('login.html')
+    return render_template('login.html', form=form)
 
 
 @ app.route('/logout')
 def logout():
+    form = LoginForm()
     # clear the current user from session
     session['username'] = ''
     flash('You were successfully logged out')
-    return render_template('login.html')
+    return render_template('login.html', form=form)
 
 
 @ app.route('/delete_result')
