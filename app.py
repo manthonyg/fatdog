@@ -43,7 +43,7 @@ def index():
         db.session.commit()
 
         return render_template('dashboard.html', new_assessment=False, result=True, name=name, weight=weight, KGS=KGS, RER=RER, MER=MER, activity=activity, breedStats=json.loads(newDog.breedStats), username=session['username'], previousResults=previousResults)
-    if 'username' in session:
+    if 'username' in session and session['username'] is not '':
         return render_template('dashboard.html', username=session['username'], assessment=True, previousResults=previousResults)
 
     return render_template('login.html', form=loginForm)
