@@ -64,13 +64,13 @@ def register():
 
     form = RegistrationForm()
     if form.validate_on_submit():
-
+        id = 1
         username = request.form.get('username')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         passwordHash = generate_password_hash(password)
         print(username, password, confirm_password)
-        newUser = User(username=username, password=passwordHash)
+        newUser = User(id=id, username=username, password=passwordHash)
         db.session.add(newUser)
         db.session.commit()
         flash('Account successfully created. Please log in.')
