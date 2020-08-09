@@ -22,13 +22,18 @@ class RegistrationForm(FlaskForm):
         Length(min=4, message=('Your password is too short.'))])
     confirm_password = PasswordField('Confirm Password', [
         DataRequired()])
-    submit = SubmitField('Register')
+    submit = SubmitField('Submit')
 
 
-class LoginForm(FlaskForm):
-    """Login form."""
-    username = StringField('Username', [
-        DataRequired()])
-    password = PasswordField('Password', [
-        DataRequired()])
-    submit = SubmitField('Login')
+# class LoginForm(FlaskForm):
+#     """Contact form."""
+
+#     name = StringField('Name', [
+#         DataRequired()])
+#     email = StringField('Email', [
+#         Email(message='Not a valid email address.'),
+#         DataRequired()])
+#     body = TextAreaField('Message', [
+#         DataRequired(),
+#         Length(min=4, message='Your message is too short.')])
+#     submit = SubmitField('Register')
