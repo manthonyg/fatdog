@@ -19,9 +19,9 @@ class User(db.Model):
     username = db.Column(db.String(255))
     password = db.Column(db.String(255))
 
-    def __init__(self, id, username, password):
-        self.username = username
-        self.password = password
+    # def __init__(self, id, username, password):
+    #     self.username = username
+    #     self.password = password
 
     def __repr__(self):
         return 'username:{}-password:{}'.format(self.username, self.password)
@@ -43,18 +43,18 @@ class Dog(db.Model):
     breedStats = db.Column(db.String(100000))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    def __init__(self, name, age, breed, shape, activity, weight, KGS, RER, MER, breedStats, user_id):
-        self.name = name
-        self.age = age
-        self.breed = breed
-        self.shape = shape
-        self.activity = activity
-        self.weight = weight
-        self.KGS = KGS
-        self.RER = RER
-        self.MER = MER
-        self.breedStats = breedStats
-        self.user_id = user_id
+    # def __init__(self, name, age, breed, shape, activity, weight, KGS, RER, MER, breedStats, user_id):
+    #     self.name = name
+    #     self.age = age
+    #     self.breed = breed
+    #     self.shape = shape
+    #     self.activity = activity
+    #     self.weight = weight
+    #     self.KGS = KGS
+    #     self.RER = RER
+    #     self.MER = MER
+    #     self.breedStats = breedStats
+    #     self.user_id = user_id
 
     def __repr__(self):
         return 'name:{}-age:{}-breed:{}-shape:{}-activity:{}-weight:{}-KGS:{}-RER:{}-MER:{}-user_id:{}'.format(self.name, self.age, self.breed, self.shape, self.activity, self.weight, self.KGS, self.RER, self.MER, self.user_id)
