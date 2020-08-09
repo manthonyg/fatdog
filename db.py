@@ -1,9 +1,12 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+import os
 
+
+SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fatdogdb.sqlite3'
+app.config['DATABASE_URL'] = 'sqlite:///fatdogdb.sqlite3'
 db = SQLAlchemy(app)
 db.create_all()
 db.Model.metadata.reflect(db.engine)
