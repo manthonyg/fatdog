@@ -6,7 +6,14 @@ from db import db, app, User, Dog
 import requests
 import json
 from forms import RegistrationForm
+import click
+from flask.cli import with_appcontext
 
+
+@click.command(name='create_tables')
+@with_appcontext
+def create_tables():
+    db.create_all()
 # Replace the values in .env.example with your values and rename this file to .env:
 
 # FLASK_APP: Entry point of your application (should be wsgi.py).
