@@ -7,9 +7,11 @@ Dashboard
 {% block script %}
 <script src="{{url_for('static', filename='scripts/form.js')}}" async></script>
 <script src="{{url_for('static', filename='scripts/sidebar.js')}}" async></script>
+<script src="{{url_for('static', filename='scripts/results.js')}}" async></script>
 {% endblock %}
 
 {% block style %}
+<link href="{{url_for('static', filename='styles/form.css')}}" type="text/css" rel="stylesheet">
 <link href="{{url_for('static', filename='styles/form.css')}}" type="text/css" rel="stylesheet">
 <link href="{{url_for('static', filename='styles/sidebar.css')}}" type="text/css" rel="stylesheet">
 {% endblock %}
@@ -17,106 +19,317 @@ Dashboard
 {% block main %}
 
 
+<div class="d-flex" id="wrapper">
 
+    <!-- Sidebar -->
+    <div class="border-right" id="sidebar-wrapper">
 
+        <div class="sidebar-heading"><img src="../static/image/fatdog.svg"></div>
+        <button id="mer" type="button" class="btn btn-secondary btn-block" data-container="body" data-toggle="popover"
+            data-title="MER" data-placement="right"
+            data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus.">
+            What is MER?
+        </button>
 
-<!-- page Content -->
-<div id="page-content-wrapper">
-    <nav class="navbar navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="fa fa-expand" id="menu-toggle" aria-hidden="true"></i>
-            </a>
-            <span class="icon-bar"><small><i class="fa fa-user"></i> Welcome, {{ username }}!</small></span>
-            <span class="icon-bar"><a href="{{ url_for('logout') }}">Logout</a>
+        <button id="rer" type="button" class="btn btn-secondary btn-block" data-container="body" data-toggle="popover"
+            data-title="RER" data-placement="right"
+            data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus.">
+            What is RER?
+        </button>
+
+        <div class="list-group">
+            <button type="button" class="list-group-item list-group-item-action active" aria-current="true">
+                Previous Results
+            </button>
+
+            {% if not previousResults %}
+            <button type="button" class="list-group-item list-group-item-action" disabled>empty</button>
+            {% endif %}
+
+            {% if previousResults %}
+            {% for result in previousResults %}
+            <form action="/view_result" method="get">
+                <button type="submit" name="dogId" value="{{ result.id }}"
+                    class="list-group-item list-group-item-action">
+            </form>
+            <small>{{ result.name }}</small> /
+            <small>{{ result.MER }}kCals</small>
+            <form action="/delete_result" method="delete">
+                <button type="submit" name="result-id" value="{{ result.id }}">Delete</button>
+            </form>
+
+            </button>
+            {% endfor %}
+            {% endif %}
         </div>
-    </nav>
-    <!-- main form -->
-    <form id="regForm" action="/" method="post">
+    </div>
+    <!-- /#sidebar-wrapper -->
 
-        <div class="tab">
-            <h1>Some basic information</h1>
-            <div class="mb-3">
-                <label for="exampleFormControlInput1" class="form-label">Dog's Name</label>
-                <input type="text" class="form-control" name="dog-name" placeholder="Moo">
-            </div>
-            <label for="select-age" class="form-label">Dog's Age</label>
-            <select class="form-select form-select mb-3" name="dog-age" id="select-age"
-                aria-label=".form-select-lg example">
-                <option selected value="age_puppy">Under 1 year old</option>
-                <option value="age_adult">1 - 7 years old</option>
-                <option value="age_elder">7 + years old</option>
-            </select>
-            <label for="exampleDataList" class="form-label">Breed</label>
-            <input class="form-control" list="breed-options" name="dog-breed" id="dog-breed"
-                placeholder="Type to search...">
-            <datalist id="breed-options">
-                <!-- dynamically created -->
-            </datalist>
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-primary fade show w50 alert-dismissible" role="alert">
+            <strong>{{ message }}</strong>
+
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+
         </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
 
-        <div class="tab">
-            <h1>What shape is your dog?</h1>
+        <nav class="navbar navbar-light bg-light">
             <div class="container-fluid">
-                <div class="row d-flex justify-content-around">
-                    <div class="col d-flex justify-content-start">
-                        <img src="../static/image/dog-very-thin.svg" class="img-fluid" />
+                <a class="navbar-brand" href="#">
+                    <i class="fa fa-expand" id="menu-toggle" aria-hidden="true"></i>
+                </a>
+                <a href="{{ url_for('index') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                        class="fa fa-arrow-r fa-sm text-white-50"></i> Start New Assessment</a>
+                <span class="icon-bar"><small><i class="fa fa-user"></i> Welcome, {{ username }}!</small></span>
+                <span class="icon-bar"><a href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </nav>
+
+        {% if assessment %}
+        <!-- main form -->
+        <form id="regForm" action="/" method="post">
+
+            <div class="tab">
+                <h1>Some basic information</h1>
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Dog's Name</label>
+                    <input type="text" class="form-control" name="dog-name" placeholder="Moo">
+                </div>
+                <label for="select-age" class="form-label">Dog's Age</label>
+                <select class="form-select form-select mb-3" name="dog-age" id="select-age"
+                    aria-label=".form-select-lg example">
+                    <option selected value="age_puppy">Under 1 year old</option>
+                    <option value="age_adult">1 - 7 years old</option>
+                    <option value="age_elder">7 + years old</option>
+                </select>
+                <label for="exampleDataList" class="form-label">Breed</label>
+                <input class="form-control" list="breed-options" name="dog-breed" id="dog-breed"
+                    placeholder="Type to search...">
+                <datalist id="breed-options">
+                    <!-- dynamically created -->
+                </datalist>
+            </div>
+
+            <div class="tab">
+                <h1>What shape is your dog?</h1>
+                <div class="container-fluid">
+                    <div class="row d-flex justify-content-around">
+                        <div class="col d-flex justify-content-start">
+                            <img src="../static/image/dog-very-thin.svg" class="img-fluid" />
+                        </div>
+                        <div class=" col">
+                            <img src="../static/image/dog-thin.svg" class="img-fluid" />
+                        </div>
+                        <div class="col">
+                            <img src="../static/image/dog-ideal.svg" class="img-fluid" />
+                        </div>
+                        <div class="col">
+                            <img src="../static/image/dog-overweight.svg" class="img-fluid" />
+                        </div>
+                        <div class="col">
+                            <img src="../static/image/dog-obese.svg" class="img-fluid" />
+                        </div>
                     </div>
-                    <div class=" col">
-                        <img src="../static/image/dog-thin.svg" class="img-fluid" />
-                    </div>
-                    <div class="col">
-                        <img src="../static/image/dog-ideal.svg" class="img-fluid" />
-                    </div>
-                    <div class="col">
-                        <img src="../static/image/dog-overweight.svg" class="img-fluid" />
-                    </div>
-                    <div class="col">
-                        <img src="../static/image/dog-obese.svg" class="img-fluid" />
+                    <div class="row">
+                        <div class="col">
+                            <input type="range" class="form-range" name="dog-shape" min="1" max="5" step=".5"
+                                id="dog-shape">
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <input type="range" class="form-range" name="dog-shape" min="1" max="5" step=".5"
-                            id="dog-shape">
+            </div>
+
+            <div class="tab">
+                <h1>How active is your dog?</h1>
+                <select class="form-select form-select-lg" size="5" name="dog-activity" aria-label="activity select">
+                    <option value="1">Family pet, inactive</option>
+                    <option value="1.6">Family pet, active</option>
+                    <option value="2">Light working (eg emotional support dog, seeing eye dog)</option>
+                    <option value="3">Moderate working (eg agility training, hunting)</option>
+                    <option value="5">Heavy working (eg military working dog,farming)</option>
+                </select>
+            </div>
+
+
+            <div class="tab">
+                <h1 id="display-weight">Dog's current weight: 64LBS</h1>
+                <input type="range" class="form-range" name="dog-weight" min="10" max="120" id="dog-weight">
+            </div>
+
+            <div style="overflow:auto;">
+                <div style="float:right;">
+                    <button class="btn mt-3" type="button" id="prevBtn" onclick="nextPrev(-1)">Previous</button>
+                    <button class="btn mt-3" type="button" id="nextBtn" onclick="nextPrev(1)">Next</button>
+                </div>
+            </div>
+
+            <!-- Circles which indicates the steps of the form: -->
+            <div style="text-align:center;margin-top:40px;">
+                <span class="step"></span>
+                <span class="step"></span>
+                <span class="step"></span>
+                <span class="step"></span>
+            </div>
+
+        </form>
+        {% endif %}
+
+        {% if result %}
+
+
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+
+            <div class="verify-bloc">
+                <div class="verify-top">
+                    <!--User image and user name -->
+                    <div class="top-img-block">
+                        <img src="{{ breedStats[0]['url'] }}" alt="" />
+                    </div>
+                    <h3></h3>
+                </div>
+                <div class="verify-middle">
+                    <!-- Loading animation and status -->
+                    <h1>{{ name }} the {{ breedStats[0]['breeds'][0]['name'] }}</h1>
+                </div>
+                <div class="verify-footer">
+                    <!-- Footer of site, maybe version -->
+
+                </div>
+            </div>
+
+
+
+
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+
+            </div>
+
+            <div class="row">
+
+                <!-- Content Column -->
+                <div class="col-12">
+
+                    <!-- Project Card Example -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Breakdown</h6>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="small font-weight-bold">{{ name }}'s Weight <span
+                                    class="float-right">{{ weight }}
+                                    lbs</span>
+                            </h4>
+                            <div class="progress mb-4">
+                                <div class="progress-bar bg-darkgreen" role="progressbar" style="width: {{ weight }}%"
+                                    aria-valuenow="{{ weight }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+
+                            <h4 class="small font-weight-bold">Low Ideal <span
+                                    class="float-right">{{ breedStats[0]['breeds'][0]['weight']['imperial'].split('-')[0].strip() }}
+                                    lbs</span>
+                            </h4>
+                            <div class="progress mb-4">
+                                <div class="progress-bar bg-lightgreen" role="progressbar"
+                                    style="width: {{ breedStats[0]['breeds'][0]['weight']['imperial'].split('-')[0].strip() }}%"
+                                    aria-valuenow="{{ breedStats[0]['breeds'][0]['weight']['imperial'].split('-')[0].strip() }}"
+                                    aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+
+                            <h4 class="small font-weight-bold">High Ideal <span
+                                    class="float-right">{{ breedStats[0]['breeds'][0]['weight']['imperial'].split('-')[1].strip() }}
+                                    lbs</span>
+                            </h4>
+                            <div class="progress mb-4">
+                                <div class="progress-bar bg-green" role="progressbar"
+                                    style="width: {{ breedStats[0]['breeds'][0]['weight']['imperial'].split('-')[1].strip() }}%"
+                                    aria-valuenow="width: {{ breedStats[0]['breeds'][0]['weight']['imperial'].split('-')[1].strip() }}%"
+                                    aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Content Row -->
+            <div class="row">
+
+
+                <!-- Earnings (Monthly) Card Example -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        RER</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ RER }} kcal</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Earnings (Monthly) Card Example -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Suggested Caloric Intake</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ MER }} kcal
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Pending Requests Card Example -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Activity Level</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ activity }}x</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="tab">
-            <h1>How active is your dog?</h1>
-            <select class="form-select form-select-lg" size="5" name="dog-activity" aria-label="activity select">
-                <option value="1">Family pet, inactive</option>
-                <option value="1.6">Family pet, active</option>
-                <option value="2">Light working (eg emotional support dog, seeing eye dog)</option>
-                <option value="3">Moderate working (eg agility training, hunting)</option>
-                <option value="5">Heavy working (eg military working dog,farming)</option>
-            </select>
-        </div>
 
 
-        <div class="tab">
-            <h1 id="display-weight">Dog's current weight: 64LBS</h1>
-            <input type="range" class="form-range" name="dog-weight" min="10" max="120" id="dog-weight">
-        </div>
 
-        <div style="overflow:auto;">
-            <div style="float:right;">
-                <button class="btn mt-3" type="button" id="prevBtn" onclick="nextPrev(-1)">Previous</button>
-                <button class="btn mt-3" type="button" id="nextBtn" onclick="nextPrev(1)">Next</button>
-            </div>
-        </div>
+    </div>
+    <!-- /.container-fluid -->
 
-        <!-- Circles which indicates the steps of the form: -->
-        <div style="text-align:center;margin-top:40px;">
-            <span class="step"></span>
-            <span class="step"></span>
-            <span class="step"></span>
-            <span class="step"></span>
-        </div>
+</div>
+<!-- End of Main Content -->
+{% endif %}
 
-    </form>
+
 </div>
 <!-- /#page-content-wrapper -->
 

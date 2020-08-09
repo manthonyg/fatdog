@@ -50,3 +50,52 @@
   background-color: var(--purple);
   color: #fff;
 }
+
+.verify-bloc {
+  margin-top: 100px;
+  color: #fff;
+  border-radius: 10px;
+  max-width: 100%;
+  padding: 2em 3em 10px 3em;
+  background-color: #000000;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 800 800'%3E%3Cg %3E%3Ccircle fill='%23000000' cx='400' cy='400' r='600'/%3E%3Ccircle fill='%231c0f2e' cx='400' cy='400' r='500'/%3E%3Ccircle fill='%232f1359' cx='400' cy='400' r='400'/%3E%3Ccircle fill='%23401588' cx='400' cy='400' r='300'/%3E%3Ccircle fill='%235113ba' cx='400' cy='400' r='200'/%3E%3Ccircle fill='%23620bee' cx='400' cy='400' r='100'/%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+  background-size: cover;
+  border: 2px solid var(--green);
+  font-family: "Open Sans", sans-serif;
+  min-width: 400px;
+  word-wrap: break-word;
+}
+.verify-top,
+.verify-middle {
+  text-align: center;
+  margin-bottom: 18px;
+}
+.top-img-block img {
+  margin-top: -100px;
+  height: 150px;
+  border-radius: 50%;
+  border: 2px solid var(--green);
+  width: 150px;
+}
+.verify-top h3 {
+  margin-top: 8px;
+  font-weight: bold;
+  font-size: 24px;
+}
+.verify-footer {
+  text-align: center;
+  font-size: 11px;
+}
+.verify-middle i {
+  margin-bottom: 6px;
+}
+.verify-footer p {
+  opacity: 0.6;
+}
+@media only screen and (max-width: 768px) {
+  .verify-bloc {
+    min-width: 80%;
+    width: 80%;
+  }
+}
