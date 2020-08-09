@@ -5,20 +5,32 @@ from functools import wraps
 from db import db, app, User, Dog
 import requests
 import json
-from forms import RegistrationForm
+from forms import RegistrationForm, LoginForm
 import click
 from flask.cli import with_appcontext
+import os
 
 
-@click.command(name='create_tables')
-@with_appcontext
-def create_tables():
+@app.cli.command('create_tables')
+def create_tables_command():
+    """Creates all tables."""
     db.create_all()
-# Replace the values in .env.example with your values and rename this file to .env:
+    print('Tables created')
 
-# FLASK_APP: Entry point of your application (should be wsgi.py).
-# FLASK_ENV: The environment to run your app in (either development or production).
-# SECRET_KEY: Randomly generated string of characters used to encrypt your app's data.
+
+@app.cli.command('drop_tables')
+def drop_tables_command():
+    """Destroys all tables."""
+    db.drop_all()
+    print('Tables dropped')
+
+
+@app.cli.command('reset_tables')
+def create_tables_command():
+    """Destroys and creates all tables."""
+    db.drop_all()
+    db.create_all()
+    print('Tables reset')
 
 
 @app.after_request
@@ -62,8 +74,10 @@ def index():
 @ app.route('/register', methods=['GET', 'POST'])
 def register():
 
-    form = RegistrationForm()
-    if form.validate_on_submit():
+    registrationForm = RegistrationForm()
+    loginForm = LoginForm()
+
+    if registrationForm.validate_on_submit():
         username = request.form.get('username')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
@@ -73,39 +87,42 @@ def register():
         db.session.add(newUser)
         db.session.commit()
         flash('Account successfully created. Please log in.')
-        return render_template('login.html')
-    return render_template('register.html', form=form)
+        return render_template('login.html', form=loginForm)
+    return render_template('register.html', form=registrationForm)
 
 
 @ app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Forget any username
-    session.clear()
-
-    if request.method == 'POST':
+    print('login route')
+    form = LoginForm()
+    print(form.errors)
+    if form.validate_on_submit():
+        # Forget any username currently in session
+        session.clear()
+        print('validated')
         username = request.form.get('username')
         password = request.form.get('password')
-        # Ensure username was submitted
 
         incomingUser = User.query.filter_by(username=username).first()
         if not incomingUser or not check_password_hash(incomingUser.password, password):
+            print('fuck')
             flash('Invalid username or password')
-            return redirect(url_for('index'))
+            return render_template('login.html', form=form)
 
         session['username'] = request.form['username']
         session['id'] = incomingUser.id
 
         return redirect(url_for('index'))
 
-    return render_template('login.html')
+    return render_template('login.html', form=form)
 
 
 @ app.route('/logout')
 def logout():
-    # clear the current user from session
-    session['username'] = ''
+    loginForm = LoginForm()
     flash('You were successfully logged out')
-    return render_template('login.html')
+    session.username = ''
+    return render_template('login.html', form=loginForm)
 
 
 @ app.route('/delete_result')
