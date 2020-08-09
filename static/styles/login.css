@@ -3,8 +3,6 @@
     lightgrn #03DAC6
     lightestgren #03DAC622
 */
-
-/* Coded with love by Mutiullah Samim */
 body,
 html {
   margin: 0;
@@ -13,7 +11,7 @@ html {
   background: #620bee !important;
 }
 .user_card {
-  height: 400px;
+  height: 420px;
   width: 350px;
   margin-top: auto;
   margin-bottom: auto;

@@ -6,6 +6,8 @@ Register
 
 {% block style %}
 <link href="{{url_for('static', filename='styles/login.css')}}" type="text/css" rel="stylesheet">
+<link href="{{url_for('static', filename='styles/form.css')}}" type="text/css" rel="stylesheet">
+
 {% endblock %}
 
 {% block main %}
@@ -19,35 +21,69 @@ Register
                 </div>
             </div>
             <div class="d-flex justify-content-center form_container">
-                <form action="/register" method="post">
-                    <div class="input-group mb-3">
-                        <h5>Register</h5>
-                    </div>
-                    <div class="input-group mb-3">
-                        <input type="text" name="username" class="form-control input_user" placeholder="username">
-                    </div>
-                    <div class="input-group mb-2">
-                        <input type="password" name="password" class="form-control input_pass" placeholder="password">
-                    </div>
-                    <div class="input-group mb-2">
-                        <input type="password" name="confirm_password" class="form-control input_pass"
-                            placeholder="confirm password">
-                    </div>
 
-                    <div class="d-flex justify-content-center mt-3 login_container">
-                        <button type="submit" class="btn login_btn">Register</button>
+
+                <form method="post" action="/register">
+                    {{ form.csrf_token }}
+                    <div class="form-field">{{ form.username.label }} {{ form.username(size=20) }}
+
+                    </div>
+                    <div class="form-field">{{ form.password.label }} {{ form.password }}
+
+                    </div>
+                    <div class="form-field">{{ form.confirm_password.label }} {{ form.confirm_password }}
+
+                    </div>
+                    {{ form.submit }}
+                    <div class="col-12 mt-2 text-center links small">
+                        Already registered? <a href="{{ url_for('login') }}" class="ml-2">Log in</a>
                     </div>
                 </form>
+
             </div>
 
-            <div class="mt-4">
-                <div class="d-flex justify-content-center links small">
-                    Already registered? <a href="{{ url_for('login') }}" class="ml-2">Log in</a>
-                </div>
-            </div>
+
         </div>
     </div>
     <div class="d-flex mt-5 justify-content-center">
+
+
+        {% if form.username.errors %}
+        {% for error in form.username.errors %}
+        <div class="alert alert-primary fade show w50 alert-dismissible" role="alert">
+            {{ error }}
+
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if form.password.errors %}
+        {% for error in form.password.errors %}
+        <div class="alert alert-primary fade show w50 alert-dismissible" role="alert">
+            {{ error }}
+
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if form.confirm_password.errors %}
+        {% for error in form.confirm_password.errors %}
+        <div class="alert alert-primary fade show w50 alert-dismissible" role="alert">
+            {{ error }}
+
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         {% for message in messages %}

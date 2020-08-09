@@ -5,6 +5,13 @@ from functools import wraps
 from db import db, app, User, Dog
 import requests
 import json
+from forms import RegistrationForm
+
+# Replace the values in .env.example with your values and rename this file to .env:
+
+# FLASK_APP: Entry point of your application (should be wsgi.py).
+# FLASK_ENV: The environment to run your app in (either development or production).
+# SECRET_KEY: Randomly generated string of characters used to encrypt your app's data.
 
 
 @app.after_request
@@ -31,20 +38,67 @@ def index():
         MER = round(int(RER) * float(activity))
         breedStats = requests.get(
             f'https://api.thedogapi.com/v1/images/search?breed_ids={breed}')
-        print(breedStats.text)
         user_id = session['id']
         newDog = Dog(name=name, age=age, breed=breed,
                      shape=shape, activity=activity, weight=weight, KGS=KGS, RER=RER, MER=MER, breedStats=breedStats.text, user_id=user_id)
 
         db.session.add(newDog)
         db.session.commit()
-        print(newDog.breedStats)
 
         return render_template('dashboard.html', new_assessment=False, result=True, name=name, weight=weight, KGS=KGS, RER=RER, MER=MER, activity=activity, breedStats=json.loads(newDog.breedStats), username=session['username'], previousResults=previousResults)
-
     if 'username' in session:
         return render_template('dashboard.html', username=session['username'], assessment=True, previousResults=previousResults)
 
+    return render_template('login.html')
+
+
+@ app.route('/register', methods=['GET', 'POST'])
+def register():
+
+    form = RegistrationForm()
+    if form.validate_on_submit():
+
+        username = request.form.get('username')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        passwordHash = generate_password_hash(password)
+        print(username, password, confirm_password)
+        newUser = User(username=username, password=passwordHash)
+        db.session.add(newUser)
+        db.session.commit()
+        flash('Account successfully created. Please log in.')
+        return render_template('login.html')
+    return render_template('register.html', form=form)
+
+
+@ app.route('/login', methods=['GET', 'POST'])
+def login():
+    # Forget any username
+    session.clear()
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        # Ensure username was submitted
+
+        incomingUser = User.query.filter_by(username=username).first()
+        if not incomingUser or not check_password_hash(incomingUser.password, password):
+            flash('Invalid username or password')
+            return redirect(url_for('index'))
+
+        session['username'] = request.form['username']
+        session['id'] = incomingUser.id
+
+        return redirect(url_for('index'))
+
+    return render_template('login.html')
+
+
+@ app.route('/logout')
+def logout():
+    # clear the current user from session
+    session['username'] = ''
+    flash('You were successfully logged out')
     return render_template('login.html')
 
 
@@ -66,62 +120,6 @@ def viewResult():
 
     print(type(jsonify(dog.breedStats)))
     return render_template('dashboard.html', new_assessment=False, result=True, name=dog.name, weight=dog.weight, KGS=dog.KGS, RER=dog.RER, MER=dog.MER, activity=dog.activity, breedStats=json.loads(dog.breedStats), username=session['username'], previousResults=previousResults)
-
-
-@ app.route('/login', methods=['GET', 'POST'])
-def login():
-    # Forget any username
-    session.clear()
-
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        # Ensure username was submitted
-
-        incomingUser = Users.query.filter_by(username=username).first()
-        if not incomingUser or not check_password_hash(incomingUser.password, password):
-            flash('Invalid username or password')
-            print('invalid useername or password')
-            return redirect(url_for('index'))
-
-        session['username'] = request.form['username']
-        session['id'] = incomingUser.id
-
-        return redirect(url_for('index'))
-
-    return render_template('login.html')
-
-
-@ app.route('/logout')
-def logout():
-    # clear the current user from session
-    session['username'] = ''
-    flash('You were successfully logged out')
-    return render_template('login.html')
-
-
-@ app.route('/register/', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-
-        username = request.form.get('username')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        passwordHash = generate_password_hash(password)
-
-        if not username:
-            flash('Invalid username')
-        if password != confirm_password:
-            flash('Passwords must match')
-        if not password:
-            flash('Invalid password')
-
-        newUser = Users(username=username, password=passwordHash)
-        db.session.add(newUser)
-        db.session.commit()
-        flash('Account successfully created. Please log in.')
-        return render_template('login.html')
-    return render_template('register.html')
 
 
 app.config['DEBUG'] = True
