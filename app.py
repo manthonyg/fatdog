@@ -21,10 +21,6 @@ def index():
 
     loginForm = LoginForm()
 
-    previousResults = Dog.query.filter_by(
-        user_id=session['id']).order_by(Dog.id).all()
-
-    print(previousResults)
     if request.method == 'POST':
 
         name = request.form.get('dog-name')
@@ -44,9 +40,14 @@ def index():
 
         db.session.add(newDog)
         db.session.commit()
+        previousResults = Dog.query.filter_by(
+            user_id=session['id']).order_by(Dog.id).all()
 
         return render_template('dashboard.html', new_assessment=False, result=True, name=name, weight=weight, KGS=KGS, RER=RER, MER=MER, activity=activity, breedStats=json.loads(newDog.breedStats), username=session['username'], previousResults=previousResults)
     if 'username' in session and session['username'] is not '':
+        previousResults = Dog.query.filter_by(
+            user_id=session['id']).order_by(Dog.id).all()
+
         return render_template('dashboard.html', username=session['username'], assessment=True, previousResults=previousResults)
 
     return render_template('login.html', form=loginForm)
