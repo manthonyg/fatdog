@@ -21,7 +21,10 @@ def index():
 
     loginForm = LoginForm()
 
-    previousResults = db.session.query(Dog).order_by(Dog.id).all()
+    previousResults = Dog.query.filter_by(
+        user_id=session['id']).order_by(Dog.id).all()
+
+    print(previousResults)
     if request.method == 'POST':
 
         name = request.form.get('dog-name')
@@ -59,9 +62,12 @@ def register():
         username = request.form.get('username')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
+        if User.query.filter_by(username=username) == True:
+            flash('Username is already taken.')
+            return render_template('register.html', form=registrationForm)
         passwordHash = generate_password_hash(password)
-        print(username, password, confirm_password)
         newUser = User(username=username, password=passwordHash)
+
         db.session.add(newUser)
         db.session.commit()
         flash('Account successfully created. Please log in.')
@@ -94,7 +100,7 @@ def login():
 def logout():
     form = LoginForm()
     # clear the current user from session
-    session['username'] = ''
+    session.clear()
     flash('You were successfully logged out')
     return render_template('login.html', form=form)
 
